@@ -1,0 +1,7 @@
+interface:
+  display_name: "RTOS Concurrency Check"
+  short_description: "Audit ThreadX or bare-metal concurrency, ISR boundaries, and lock/wait risks."
+  default_prompt: "Use $rtos-baremetal-concurrency-check to analyze this thread and ISR synchronization issue."
+
+policy:
+  allow_implicit_invocation: true

@@ -130,78 +130,78 @@ extern "C" void Run_phase2_test(void)
     BSP_ELC_Enable(BSP_ELC);
     // 5. 启动 Timer
     BSP_Timer_Start(BSP_TIMER_OVERFLOW); 
-    AppPrint::PrintLog("Timer Started. Waiting...");
+    // AppPrint::PrintLog("Timer Started. Waiting...");
 
-    // 6. 等待 (200 ticks)
-    fsp_err_t err = BSP_DMAC_WaitComplete(BSP_DMAC_ADC_0, 2000);
+    // // 6. 等待 (200 ticks)
+    // fsp_err_t err = BSP_DMAC_WaitComplete(BSP_DMAC_ADC_0, 2000);
 
-    if (FSP_SUCCESS == err) {
-        // 采集成功，立即停止 Timer 防止数据覆写
-        BSP_Timer_Stop(BSP_TIMER_OVERFLOW);
-        for(int i = 0 ; i<50 ; i++)
-        {
+    // if (FSP_SUCCESS == err) {
+    //     // 采集成功，立即停止 Timer 防止数据覆写
+    //     BSP_Timer_Stop(BSP_TIMER_OVERFLOW);
+    //     for(int i = 0 ; i<50 ; i++)
+    //     {
 
-            BSP_Printf(COM_DEBUG, "%d\r\n", g_adc_raw_buffer[i]); 
+    //         BSP_Printf(COM_DEBUG, "%d\r\n", g_adc_raw_buffer[i]); 
 
-        }
-        AppPrint::PrintLog("SUCCESS: Transfer Done! Calculating...");
+    //     }
+    //     AppPrint::PrintLog("SUCCESS: Transfer Done! Calculating...");
 
-        // ------------------------------------------------------
-        // Step 5: 数据处理与阻抗解算
-        // ------------------------------------------------------
+    //     // ------------------------------------------------------
+    //     // Step 5: 数据处理与阻抗解算
+    //     // ------------------------------------------------------
         
-        // A. 计算直流偏置 (DC Bias)
-        long sum = 0;
-        for(int i=0; i<WAVE_POINTS; i++) sum += g_adc_raw_buffer[i];
-        float dc_bias = (float)sum / WAVE_POINTS;
+    //     // A. 计算直流偏置 (DC Bias)
+    //     long sum = 0;
+    //     for(int i=0; i<WAVE_POINTS; i++) sum += g_adc_raw_buffer[i];
+    //     float dc_bias = (float)sum / WAVE_POINTS;
         
-        AppPrint::PrintFloat("1. DC Bias (Target: ~2048)", dc_bias, "code");
+    //     AppPrint::PrintFloat("1. DC Bias (Target: ~2048)", dc_bias, "code");
 
-        // B. 去直流 (DC Removal) -> 得到纯交流信号
-        // 将 ADC 原始整数 (LSB) 转换为浮点，并减去偏置
-        // 结果存入 sin_voltage 数组
-        for(int i=0; i<WAVE_POINTS; i++) {
-            sin_voltage[i] = (float)g_adc_raw_buffer[i] - dc_bias;
-        }
+    //     // B. 去直流 (DC Removal) -> 得到纯交流信号
+    //     // 将 ADC 原始整数 (LSB) 转换为浮点，并减去偏置
+    //     // 结果存入 sin_voltage 数组
+    //     for(int i=0; i<WAVE_POINTS; i++) {
+    //         sin_voltage[i] = (float)g_adc_raw_buffer[i] - dc_bias;
+    //     }
 
-        // C. 生成标准参考波 (Reference Signals)
-        // 生成标准正弦和余弦波 (幅度 1.0)，用于解调
-        EisRefGenerator::Generate(stand_sin, WAVE_POINTS, 1000.0f, 100000.0f, BSP_ALG_SIN);
-        EisRefGenerator::Generate(stand_cos, WAVE_POINTS, 1000.0f, 100000.0f, BSP_ALG_COS);
+    //     // C. 生成标准参考波 (Reference Signals)
+    //     // 生成标准正弦和余弦波 (幅度 1.0)，用于解调
+    //     EisRefGenerator::Generate(stand_sin, WAVE_POINTS, 1000.0f, 100000.0f, BSP_ALG_SIN);
+    //     EisRefGenerator::Generate(stand_cos, WAVE_POINTS, 1000.0f, 100000.0f, BSP_ALG_COS);
 
-        // D. 数字锁相解算 (Demodulation)
-        // 计算实部 (In-Phase) 和 虚部 (Quadrature)
-        float Vr = DigitalLockIn::Demodulate(sin_voltage, stand_sin, WAVE_POINTS);
-        float Vi = DigitalLockIn::Demodulate(sin_voltage, stand_cos, WAVE_POINTS);
+    //     // D. 数字锁相解算 (Demodulation)
+    //     // 计算实部 (In-Phase) 和 虚部 (Quadrature)
+    //     float Vr = DigitalLockIn::Demodulate(sin_voltage, stand_sin, WAVE_POINTS);
+    //     float Vi = DigitalLockIn::Demodulate(sin_voltage, stand_cos, WAVE_POINTS);
 
-        // E. 计算最终阻抗 (Impedance Calculation)
-        // 关键：硬件回环测试中，V_out 接 V_in，所以我们假设 Current = Voltage
-        // 因此 R = V / I = 1.0
-        ImpedanceResult res;
-        ImpedanceSolver::Calculate(Vr, Vi, Vr, Vi, &res); 
+    //     // E. 计算最终阻抗 (Impedance Calculation)
+    //     // 关键：硬件回环测试中，V_out 接 V_in，所以我们假设 Current = Voltage
+    //     // 因此 R = V / I = 1.0
+    //     ImpedanceResult res;
+    //     ImpedanceSolver::Calculate(Vr, Vi, Vr, Vi, &res); 
 
-        // ------------------------------------------------------
-        // Step 6: 打印最终结果
-        // ------------------------------------------------------
-        AppPrint::PrintFloat("2. Meas Mag (Target: ~1241)", res.Magnitude, "LSB");
-        AppPrint::PrintFloat("3. Meas Res (Target: 1.000)", res.R_real, "Ohm");
+    //     // ------------------------------------------------------
+    //     // Step 6: 打印最终结果
+    //     // ------------------------------------------------------
+    //     AppPrint::PrintFloat("2. Meas Mag (Target: ~1241)", res.Magnitude, "LSB");
+    //     AppPrint::PrintFloat("3. Meas Res (Target: 1.000)", res.R_real, "Ohm");
 
-        // 简单的自动判定
-        if (res.R_real > 0.95f && res.R_real < 1.05f) {
-             AppPrint::PrintLog(">>> RESULT: PASS (Perfect Loopback) <<<");
-        } else {
-             AppPrint::PrintLog(">>> RESULT: WARNING (Check Connections) <<<");
-        }
+    //     // 简单的自动判定
+    //     if (res.R_real > 0.95f && res.R_real < 1.05f) {
+    //          AppPrint::PrintLog(">>> RESULT: PASS (Perfect Loopback) <<<");
+    //     } else {
+    //          AppPrint::PrintLog(">>> RESULT: WARNING (Check Connections) <<<");
+    //     }
 
-    } else {
-        // ------------------------------------------------------
-        // Step 7: 错误诊断
-        // ------------------------------------------------------
-        BSP_Timer_Stop(BSP_TIMER_OVERFLOW);
-        AppPrint::PrintLog("FAILURE: Timeout occurred!");
+    // } else {
+    //     // ------------------------------------------------------
+    //     // Step 7: 错误诊断
+    //     // ------------------------------------------------------
+    //     BSP_Timer_Stop(BSP_TIMER_OVERFLOW);
+    //     AppPrint::PrintLog("FAILURE: Timeout occurred!");
         
         
-    }
+    // }
 }
 
 extern "C" void Run_phase25_test(void)

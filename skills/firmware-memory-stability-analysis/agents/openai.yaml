@@ -1,0 +1,7 @@
+interface:
+  display_name: "Memory Stability Analysis"
+  short_description: "Analyze linker/layout and runtime memory stability risks for MCU firmware."
+  default_prompt: "Use $firmware-memory-stability-analysis to diagnose this memory corruption or hardfault issue."
+
+policy:
+  allow_implicit_invocation: true

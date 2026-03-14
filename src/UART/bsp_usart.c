@@ -135,7 +135,12 @@ fsp_err_t BSP_Printf(bsp_com_id_e com_id, const char *fmt, ...)
 
     if (len > 0)
     {
-        err = bsp_serial_send_internal(com_id, (uint8_t *)p_ctrl->print_buf, (uint32_t)len);
+        uint32_t tx_len = (uint32_t)len;
+        if (tx_len >= PRINTF_BUF_SIZE)
+        {
+            tx_len = PRINTF_BUF_SIZE - 1U;
+        }
+        err = bsp_serial_send_internal(com_id, (uint8_t *)p_ctrl->print_buf, tx_len);
     }
     else
     {

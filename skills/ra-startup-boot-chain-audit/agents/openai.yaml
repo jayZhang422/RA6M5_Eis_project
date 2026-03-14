@@ -1,0 +1,7 @@
+interface:
+  display_name: "RA Startup Audit"
+  short_description: "Diagnose Renesas RA/FSP startup and boot-chain failures with evidence-based checks."
+  default_prompt: "Use $ra-startup-boot-chain-audit to analyze this firmware boot hang and provide a minimal fix plan."
+
+policy:
+  allow_implicit_invocation: true

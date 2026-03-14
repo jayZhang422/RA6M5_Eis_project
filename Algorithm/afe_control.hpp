@@ -3,8 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// 假设这是从你的 dsp_preprocess.hpp 包含过来的
-// #include "dsp_preprocess.hpp" 
+
 namespace EIS {
 
 // 声明外部传入的质量枚举 (与模块一解耦对应)

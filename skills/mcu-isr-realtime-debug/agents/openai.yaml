@@ -1,0 +1,7 @@
+interface:
+  display_name: "MCU ISR Realtime Debug"
+  short_description: "Find interrupt latency, jitter, and missed-IRQ root causes in MCU firmware."
+  default_prompt: "Use $mcu-isr-realtime-debug to diagnose this interrupt latency problem and propose minimal low-risk changes."
+
+policy:
+  allow_implicit_invocation: true

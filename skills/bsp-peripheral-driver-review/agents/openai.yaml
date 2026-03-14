@@ -1,0 +1,7 @@
+interface:
+  display_name: "BSP Driver Review"
+  short_description: "Review MCU peripheral driver contracts, init order, and hardware safety risks."
+  default_prompt: "Use $bsp-peripheral-driver-review to review this driver design and provide a minimal, hardware-safe change plan."
+
+policy:
+  allow_implicit_invocation: true
