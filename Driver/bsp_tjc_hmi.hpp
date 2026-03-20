@@ -12,60 +12,55 @@ namespace TjcHmi {
     void Init(bsp_com_id_e port);
 
     // ==========================================
-    // 发送与赋值指令
-    // ==========================================
-    void SendCmd(const char* fmt, ...);
-    void SetValue(const char* obj_name, int32_t val);
-    void SetText(const char* obj_name, const char* text);
-    void SetFloat(const char* obj_name, float val, uint8_t decimals = 2);
-
-    /**
-     * @brief 颜色设置 (对应 python 的 .pco 指令 [cite: 6, 7])
-     * @param obj_name 控件名，例如 "page4.t8"
-     * @param color_565 RGB565颜色值
-     */
-    void SetColor(const char* obj_name, uint16_t color_565);
-
-    // ==========================================
-    // 波形控件指令 (对应 python 的 HMI_Wave 系列函数 [cite: 1, 2])
+    // 底层 TX 发送接口
     // ==========================================
     
     /**
-     * @brief 清空波形数据 (cle 指令 [cite: 2])
+     * @brief 格式化发送指令（内部自动追加 0xFF 0xFF 0xFF 结束符并加锁）
      */
-    void ClearWave(uint8_t component_id, uint8_t channel);
+    void SendCmd(const char* fmt, ...);
 
     /**
-     * @brief 动态添加单个波形数据 (add 指令 [cite: 1])
+     * @brief 发送纯数据流（不带结束符，常用于连续波形数据的传输）
      */
-    void AddWave(uint8_t component_id, uint8_t channel, uint8_t val);
+    void SendRawData(const uint8_t* data, uint16_t len);
 
     /**
-     * @brief 静态快速下发批量波形数据 (addt 指令 [cite: 2])
-     * @note 内部处理了底层数据分包与时序
+     * @brief 发送纯结束符 (0xFF 0xFF 0xFF)
      */
-    void AddWaveFast(uint8_t component_id, uint8_t channel, const uint8_t* data, uint16_t len);
+    void SendEndFrame(void);
 
+    /**
+     * @brief 显式获取与释放发送锁
+     * @note 用于应用层需要发送复合指令组合（例如发送头 -> 延时 -> 发数据 -> 结束符）
+     * 以防止被其他线程的屏幕更新打断。
+     */
+    void LockTx(void);
+    void UnlockTx(void);
 
     // ==========================================
-    // 接收解析机制 (对应 python 的 parse_frame 逻辑 [cite: 12, 13])
+    // 底层 RX 接收解析接口
     // ==========================================
 
     /**
-     * @brief 触摸事件回调函数指针定义
+     * @brief 串口屏标准返回帧回调函数指针 (解析 0x65 按键报文)
      * @param page  页面ID
      * @param cmp   控件ID
      * @param event 0x01为按下，0x00为松开
      */
-    typedef void (*TouchEventCb_t)(uint8_t page, uint8_t cmp, uint8_t event);
+    typedef void (*RxEventCb_t)(uint8_t page, uint8_t cmp, uint8_t event);
+
+        // 在 bsp_tjc_hmi.hpp 的接收解析机制区域添加：
+        typedef void (*StringEventCb_t)(const char* str);
+        void SetStringCallback(StringEventCb_t cb);
 
     /**
-     * @brief 注册触摸回调函数
+     * @brief 注册接收回调函数，将解析结果抛给应用层处理
      */
-    void SetTouchCallback(TouchEventCb_t cb);
+    void SetRxCallback(RxEventCb_t cb);
 
     /**
-     * @brief 串口接收解析轮询任务
+     * @brief 串口接收解析轮询任务 (协议层状态机)
      * @note 请在一个独立的 ThreadX 线程的 while(1) 循环中调用此函数
      */
     void RxTaskLoop(void);

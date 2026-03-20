@@ -8,33 +8,48 @@ namespace TjcHmi {
     #define TJC_BUF_SIZE 128
     
     static bsp_com_id_e g_uart_port;
+    
+    // 整个 HMI 层共享的发送缓冲区，受到 g_hmi_mutex 保护
     static uint8_t      g_tx_buf[TJC_BUF_SIZE];
+    
+    // HMI 协议事务锁（区别于 bsp_usart.c 中的硬件传输锁）
     static TX_MUTEX     g_hmi_mutex;
     static bool         g_is_init = false;
 
     // 回调函数全局指针
-    static TouchEventCb_t g_touch_cb = nullptr;
+    static RxEventCb_t  g_rx_cb = nullptr;
+    static StringEventCb_t g_str_cb = nullptr;
 
-    static void SendRawBuffer(int valid_len) {
-        if (valid_len <= 0 || valid_len >= (TJC_BUF_SIZE - 3)) return;
-        g_tx_buf[valid_len]     = 0xFF;
-        g_tx_buf[valid_len + 1] = 0xFF;
-        g_tx_buf[valid_len + 2] = 0xFF;
-        BSP_Serial_Send(g_uart_port, g_tx_buf, (uint32_t)(valid_len + 3));
-        tx_thread_sleep(2); 
-    }
+
+    static const uint8_t g_end_frame[3] = {0xFF, 0xFF, 0xFF};
 
     void Init(bsp_com_id_e port) {
         if (g_is_init) return;
         g_uart_port = port;
+        
+        // 创建事务锁，支持优先级继承防反转
         tx_mutex_create(&g_hmi_mutex, (CHAR*)"TJC_MUTEX", TX_INHERIT);
+        
+        // 调用底层的初始化 (底层内部会创建 tx_mutex 和 rx_mutex)
         BSP_Serial_Init(port);
         g_is_init = true;
     }
 
+    void LockTx(void) {
+        if (g_is_init) tx_mutex_get(&g_hmi_mutex, TX_WAIT_FOREVER);
+    }
+
+    void UnlockTx(void) {
+        if (g_is_init) tx_mutex_put(&g_hmi_mutex);
+    }
+
     void SendCmd(const char* fmt, ...) {
         if (!g_is_init || (nullptr == fmt)) return;
-        if (TX_SUCCESS != tx_mutex_get(&g_hmi_mutex, TX_WAIT_FOREVER)) return;
+        
+        // 获取 HMI 事务锁：
+        // 1. 保护全局的 g_tx_buf 不被其他线程篡改
+        // 2. 保护屏幕接收指令后的 2 tick 消化时间
+        LockTx();
 
         va_list args;
         va_start(args, fmt);
@@ -45,161 +60,97 @@ namespace TjcHmi {
             if (len >= (TJC_BUF_SIZE - 3)) {
                 len = TJC_BUF_SIZE - 4;
             }
-            SendRawBuffer(len);
+            // 自动追加结束符
+            g_tx_buf[len]     = 0xFF;
+            g_tx_buf[len + 1] = 0xFF;
+            g_tx_buf[len + 2] = 0xFF;
+            
+            // 此时调用 BSP 会触发底层 tx_mutex 的获取和释放，这是安全的嵌套逻辑
+            BSP_Serial_Send(g_uart_port, g_tx_buf, (uint32_t)(len + 3));
+            
+            // 保持 HMI 锁，休眠 2 tick 给屏幕喘息时间，防止其他 HMI 线程趁虚而入
+            tx_thread_sleep(2); 
         }
 
-        tx_mutex_put(&g_hmi_mutex);
+        UnlockTx();
     }
 
-    void SetValue(const char* obj_name, int32_t val) {
-        if (nullptr == obj_name) return;
-        SendCmd("%s.val=%ld", obj_name, (long)val);
-    }
-
-    void SetText(const char* obj_name, const char* text) {
-        if ((nullptr == obj_name) || (nullptr == text)) return;
-        SendCmd("%s.txt=\"%s\"", obj_name, text);
-    }
-
-    void SetFloat(const char* obj_name, float val, uint8_t decimals) {
-        if (nullptr == obj_name) return;
-        if (decimals > 6U) decimals = 6U;
-        bool neg = (val < 0.0f);
-        float abs_val = neg ? -val : val;
-
-        uint32_t scale = 1U;
-        for (uint8_t i = 0U; i < decimals; ++i)
-        {
-            scale *= 10U;
-        }
-
-        int32_t i_part = (int32_t)abs_val;
-        int32_t d_part = 0;
-
-        if (decimals > 0U)
-        {
-            float frac = abs_val - (float)i_part;
-            d_part = (int32_t)(frac * (float)scale + 0.5f);
-            if ((uint32_t)d_part >= scale)
-            {
-                i_part += 1;
-                d_part = 0;
-            }
-        }
-
-        if (decimals == 0U)
-        {
-            if (neg) SendCmd("%s.txt=\"-%ld\"", obj_name, (long)i_part);
-            else SendCmd("%s.txt=\"%ld\"", obj_name, (long)i_part);
-        }
-        else
-        {
-            if (neg) SendCmd("%s.txt=\"-%ld.%0*ld\"", obj_name, (long)i_part, (int)decimals, (long)d_part);
-            else SendCmd("%s.txt=\"%ld.%0*ld\"", obj_name, (long)i_part, (int)decimals, (long)d_part);
-        }
-    }
-
-    // ==========================================
-    // 新增：颜色与波形实现
-    // ==========================================
-    
-    void SetColor(const char* obj_name, uint16_t color_565) {
-        SendCmd("%s.pco=%u", obj_name, color_565);
-    }
-
-    void ClearWave(uint8_t component_id, uint8_t channel) {
-        SendCmd("cle %d,%d", component_id, channel);
-    }
-
-    void AddWave(uint8_t component_id, uint8_t channel, uint8_t val) {
-        SendCmd("add %d,%d,%d", component_id, channel, val);
-    }
-
-    void AddWaveFast(uint8_t component_id, uint8_t channel, const uint8_t* data, uint16_t len) {
+    void SendRawData(const uint8_t* data, uint16_t len) {
         if (!g_is_init || data == nullptr || len == 0) return;
         
-        tx_mutex_get(&g_hmi_mutex, TX_WAIT_FOREVER);
-        
-        // 1. 发送头指令 addt [cite: 2]
-        int head_len = snprintf((char*)g_tx_buf, TJC_BUF_SIZE - 3, "addt %d,%d,%d", component_id, channel, len);
-        if ((head_len <= 0) || (head_len >= (TJC_BUF_SIZE - 3))) {
-            tx_mutex_put(&g_hmi_mutex);
-            return;
-        }
-        g_tx_buf[head_len] = 0xFF;
-        g_tx_buf[head_len + 1] = 0xFF;
-        g_tx_buf[head_len + 2] = 0xFF;
-        BSP_Serial_Send(g_uart_port, g_tx_buf, (uint32_t)(head_len + 3));
-        
-        // 关键时序：与 Python 实验脚本保持一致，addt 头后等待 100ms
-        tx_thread_sleep(100);
-
-        // 2. 连续发送纯二进制波形数据 [cite: 2]
+        LockTx();
         BSP_Serial_Send(g_uart_port, (uint8_t*)data, len);
-
-        // 3. 发送纯结束符 [cite: 2]
-        g_tx_buf[0] = 0xFF; g_tx_buf[1] = 0xFF; g_tx_buf[2] = 0xFF;
-        BSP_Serial_Send(g_uart_port, g_tx_buf, 3);
-
-        tx_mutex_put(&g_hmi_mutex);
+        UnlockTx();
     }
 
-    // ==========================================
-    // 新增：接收与解析机制
-    // ==========================================
-    
-    void SetTouchCallback(TouchEventCb_t cb) {
-        g_touch_cb = cb;
-    }
-
-    void RxTaskLoop(void) {
+    void SendEndFrame(void) {
         if (!g_is_init) return;
+        
+        LockTx();
+        BSP_Serial_Send(g_uart_port, (uint8_t*)g_end_frame, 3);
+        UnlockTx();
+    }
 
-        uint8_t rx_byte;
-        static uint8_t state = 0;
-        static uint8_t frame[7];
-        static uint8_t ff_count = 0;
+    void SetRxCallback(RxEventCb_t cb) {
+        g_rx_cb = cb;
+    }
 
-        // 这里使用超时阻塞读取，完美契合 ThreadX，不会榨干 CPU
-        if (FSP_SUCCESS == BSP_Serial_Read(g_uart_port, &rx_byte, 1)) {
-            // 淘晶驰/迪文屏按键报文格式：0x65 Page Cmp Event 0xFF 0xFF 0xFF [cite: 11, 12, 15]
+    void SetStringCallback(StringEventCb_t cb) {
+    g_str_cb = cb;
+    }
+
+   void RxTaskLoop(void) {
+    if (!g_is_init) return;
+
+    uint8_t rx_byte;
+    static uint8_t state = 0;
+    static uint8_t frame[7];
+    static uint8_t ff_count = 0;
+    
+    // 新增：专门存字符串的罐子
+    static char str_buf[32];
+    static uint8_t str_idx = 0;
+
+    if (FSP_SUCCESS == BSP_Serial_Read(g_uart_port, &rx_byte, 1)) {
+        if (state == 0) {
+            if (rx_byte == 0x65) {
+                // 1. 发现按键动作帧头
+                frame[0] = rx_byte;
+                state = 1;
+                ff_count = 0;
+            } 
+            else if (rx_byte >= 0x20 && rx_byte <= 0x7E) {
+                // 2. 发现英文字母/数字等可见字符，存入字符串罐子
+                if (str_idx < sizeof(str_buf) - 1) {
+                    str_buf[str_idx++] = (char)rx_byte;
+                }
+            } 
+            else if (rx_byte == 0x0A || rx_byte == 0x0D) {
+                // 3. 发现回车换行符 (0D 0A)，说明屏幕发完了一个完整的词！
+                if (str_idx > 0) {
+                    str_buf[str_idx] = '\0'; // 加上C语言字符串结束符
+                    // 触发字符串回调！
+                    if (g_str_cb) g_str_cb(str_buf); 
+                    str_idx = 0; // 清空罐子，准备接下一个词
+                }
+            }
+        }
+        else {
+            // 这里保留你原来处理 state 1 到 6 的 0x65 协议代码
             switch(state) {
-                case 0:
-                    if (rx_byte == 0x65) {
-                        frame[0] = rx_byte;
-                        state = 1;
-                        ff_count = 0;
-                    }
-                    break;
-                case 1: // Page ID
-                case 2: // Cmp ID
-                case 3: // Event (0x01 pressed, 0x00 released)
-                    frame[state] = rx_byte;
-                    state++;
-                    break;
-                case 4:
-                case 5:
-                case 6:
+                case 1: case 2: case 3:
+                    frame[state] = rx_byte; state++; break;
+                case 4: case 5: case 6:
                     if (rx_byte == 0xFF) {
                         ff_count++;
                         if (ff_count == 3) {
-                            // 帧校验通过，触发回调 [cite: 13]
-                            if (g_touch_cb) {
-                                g_touch_cb(frame[1], frame[2], frame[3]);
-                            }
+                           if (g_rx_cb) g_rx_cb(frame[1], frame[2], frame[3]);
                             state = 0; 
-                        } else {
-                            state++;
-                        }
-                    } else {
-                        // 帧格式错误，重置状态机
-                        state = 0; 
-                    }
-                    break;
-                default:
-                    state = 0;
+                        } else { state++; }
+                    } else { state = 0; }
                     break;
             }
         }
     }
+}
 }
