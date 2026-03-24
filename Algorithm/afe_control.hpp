@@ -2,7 +2,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "bsp_gpio.h"
+#include "tx_api.h"
 
 namespace EIS {
 
@@ -25,6 +26,19 @@ typedef enum {
     AGC_STATE_JUST_CHANGED,   // 触发态：刚刚改变了增益要求，底层需立即操作 GPIO 更新 PGA
     AGC_STATE_LIMIT_WARNING   // 极限态：信号过载或过弱，但硬件增益档位已到头，无法再调
 } AgcState_e;
+typedef enum {
+    PGA281_GAIN_0_125 = 0x00, // 放大 1/8 倍 (衰减)
+    PGA281_GAIN_0_25  = 0x01, // 放大 1/4 倍
+    PGA281_GAIN_0_5   = 0x02, // 放大 1/2 倍
+    PGA281_GAIN_1     = 0x03, // 放大 1 倍 (默认)
+    PGA281_GAIN_2     = 0x04, // 放大 2 倍
+    PGA281_GAIN_4     = 0x05, // 放大 4 倍
+    PGA281_GAIN_8     = 0x06, // 放大 8 倍
+    PGA281_GAIN_16    = 0x07, // 放大 16 倍
+    PGA281_GAIN_32    = 0x08, // 放大 32 倍
+    PGA281_GAIN_64    = 0x09, // 放大 64 倍
+    PGA281_GAIN_128   = 0x0A  // 放大 128 倍
+} pga281_gain_t;
 
 
 // ==========================================
@@ -156,6 +170,44 @@ public:
         }
 
         return cfg;
+    }
+};
+
+class AFE_Controller {
+private:
+    
+    const bsp_io_port_pin_t PIN_G0 = BSP_IO_PORT_08_PIN_03;
+    const bsp_io_port_pin_t PIN_G1 = BSP_IO_PORT_08_PIN_04;
+    const bsp_io_port_pin_t PIN_G2 = BSP_IO_PORT_00_PIN_02;
+    const bsp_io_port_pin_t PIN_G3 = BSP_IO_PORT_05_PIN_11;
+    const bsp_io_port_pin_t PIN_G4 = BSP_IO_PORT_05_PIN_12;
+
+public:
+    AFE_Controller() {}
+    
+    // 初始化引脚状态
+    void init()
+    {
+        set_pga_gain(PGA281_GAIN_1);
+    }
+    
+    // 设置 PGA281 的放大倍数
+    void set_pga_gain(pga281_gain_t target_gain)
+    {
+    bsp_io_level_t level_g0 = (target_gain & 0x01) ? BSP_IO_LEVEL_HIGH : BSP_IO_LEVEL_LOW;
+    bsp_io_level_t level_g1 = (target_gain & 0x02) ? BSP_IO_LEVEL_HIGH : BSP_IO_LEVEL_LOW;
+    bsp_io_level_t level_g2 = (target_gain & 0x04) ? BSP_IO_LEVEL_HIGH : BSP_IO_LEVEL_LOW;
+    bsp_io_level_t level_g3 = (target_gain & 0x08) ? BSP_IO_LEVEL_HIGH : BSP_IO_LEVEL_LOW;
+    bsp_io_level_t level_g4 = (target_gain & 0x10) ? BSP_IO_LEVEL_HIGH : BSP_IO_LEVEL_LOW;
+
+        BSP_GPIOWrite(PIN_G0, level_g0) ;
+        BSP_GPIOWrite(PIN_G1, level_g1) ;
+        BSP_GPIOWrite(PIN_G2, level_g2) ;
+        BSP_GPIOWrite(PIN_G3, level_g3) ;
+        BSP_GPIOWrite(PIN_G4, level_g4) ;
+   
+    
+        tx_thread_sleep(50) ;
     }
 };
 

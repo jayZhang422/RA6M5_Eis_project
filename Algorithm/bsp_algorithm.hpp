@@ -10,6 +10,9 @@
 
 #define BSP_ALG_SIN 0
 #define BSP_ALG_COS PI/2
+namespace EIS {
+
+
 
 template<uint16_t FFT_SIZE>
 
@@ -222,3 +225,5 @@ public:
         return config;
     }
 };
+
+}

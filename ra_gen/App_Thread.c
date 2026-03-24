@@ -4,7 +4,7 @@
 TX_THREAD App_Thread;
                 void App_Thread_create(void);
                 static void App_Thread_func(ULONG thread_input);
-                static uint8_t App_Thread_stack[1024] BSP_PLACE_IN_SECTION(BSP_UNINIT_SECTION_PREFIX ".stack.App_Thread") BSP_ALIGN_VARIABLE(BSP_STACK_ALIGNMENT);
+                static uint8_t App_Thread_stack[4096] BSP_PLACE_IN_SECTION(BSP_UNINIT_SECTION_PREFIX ".stack.App_Thread") BSP_ALIGN_VARIABLE(BSP_STACK_ALIGNMENT);
                 void tx_startup_err_callback(void * p_instance, void * p_data);
                 void tx_startup_common_init(void);
 extern bool         g_fsp_common_initialized;
@@ -26,7 +26,7 @@ extern bool         g_fsp_common_initialized;
                         App_Thread_func,
                         (ULONG) NULL,
                         &App_Thread_stack,
-                        1024,
+                        4096,
                         1,
                         1,
                         1,

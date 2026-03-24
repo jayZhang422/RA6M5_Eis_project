@@ -75,6 +75,8 @@
       <configSetting altId="irq0.irq06.p000" configurationId="irq0.irq06" isUsedByDriver="true" peripheral="ICU0"/>
       <configSetting altId="p000.gpio_irq.gpio_irq_enabled" configurationId="p000.gpio_irq"/>
       <configSetting altId="p000.gpio_mode.gpio_mode_irq" configurationId="p000.gpio_mode"/>
+      <configSetting altId="p002.output.low" configurationId="p002"/>
+      <configSetting altId="p002.gpio_mode.gpio_mode_out.low" configurationId="p002.gpio_mode"/>
       <configSetting altId="p004.gpio_mode.gpio_mode_an" configurationId="p004.gpio_mode"/>
       <configSetting altId="p005.gpio_mode.gpio_mode_an" configurationId="p005.gpio_mode"/>
       <configSetting altId="p014.gpio_mode.gpio_mode_an" configurationId="p014.gpio_mode"/>
@@ -111,10 +113,18 @@
       <configSetting altId="p409.gpio_mode.gpio_mode_peripheral" configurationId="p409.gpio_mode"/>
       <configSetting altId="p410.gpio_speed.gpio_speed_medium" configurationId="p410.gpio_drivecapacity"/>
       <configSetting altId="p410.gpio_mode.gpio_mode_peripheral" configurationId="p410.gpio_mode"/>
+      <configSetting altId="p511.output.low" configurationId="p511"/>
+      <configSetting altId="p511.gpio_mode.gpio_mode_out.low" configurationId="p511.gpio_mode"/>
+      <configSetting altId="p512.output.low" configurationId="p512"/>
+      <configSetting altId="p512.gpio_mode.gpio_mode_out.low" configurationId="p512.gpio_mode"/>
       <configSetting altId="p608.output.low" configurationId="p608"/>
       <configSetting altId="p608.gpio_mode.gpio_mode_out.low" configurationId="p608.gpio_mode"/>
       <configSetting altId="p613.gpio_mode.gpio_mode_peripheral" configurationId="p613.gpio_mode"/>
       <configSetting altId="p614.gpio_mode.gpio_mode_peripheral" configurationId="p614.gpio_mode"/>
+      <configSetting altId="p803.output.low" configurationId="p803"/>
+      <configSetting altId="p803.gpio_mode.gpio_mode_out.low" configurationId="p803.gpio_mode"/>
+      <configSetting altId="p804.output.low" configurationId="p804"/>
+      <configSetting altId="p804.gpio_mode.gpio_mode_out.low" configurationId="p804.gpio_mode"/>
       <configSetting altId="qspi0.qio0.p307" configurationId="qspi0.qio0" isUsedByDriver="true" peripheral="QSPI0"/>
       <configSetting altId="qspi0.qio1.p308" configurationId="qspi0.qio1" isUsedByDriver="true" peripheral="QSPI0"/>
       <configSetting altId="qspi0.qio2.p309" configurationId="qspi0.qio2" isUsedByDriver="true" peripheral="QSPI0"/>

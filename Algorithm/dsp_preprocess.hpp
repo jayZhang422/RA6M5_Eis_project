@@ -9,13 +9,16 @@
 
 namespace EIS {
 
-// 信号质量状态枚举
+
+#ifndef EIS_SIGNAL_QUALITY_DEFINED
+#define EIS_SIGNAL_QUALITY_DEFINED
 typedef enum {
     SIGNAL_OK = 0,
     SIGNAL_CLIPPED,      // 信号削顶或触底 (增益过大)
     SIGNAL_TOO_WEAK,     // 信号太弱 (需要提高增益)
     SIGNAL_INVALID_PARAM // 传入参数非法
 } SignalQuality_e;
+#endif // EIS_SIGNAL_QUALITY_DEFINED
 
 class DspPreprocess {
 public:

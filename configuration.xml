@@ -724,7 +724,7 @@
     <context id="rtos.threadx.thread.1942946880">
       <property id="_symbol" value="App_Thread"/>
       <property id="rtos.threadx.thread.name" value="App_Thread"/>
-      <property id="rtos.threadx.thread.stack" value="1024"/>
+      <property id="rtos.threadx.thread.stack" value="4096"/>
       <property id="rtos.threadx.thread.priority" value="1"/>
       <property id="rtos.threadx.thread.autostart" value="rtos.threadx.thread.autostart.enabled"/>
       <property id="rtos.threadx.thread.timeslice" value="1"/>
@@ -851,6 +851,8 @@
       <configSetting altId="p000.irq0.irq06" configurationId="p000"/>
       <configSetting altId="p000.gpio_irq.gpio_irq_enabled" configurationId="p000.gpio_irq"/>
       <configSetting altId="p000.gpio_mode.gpio_mode_irq" configurationId="p000.gpio_mode"/>
+      <configSetting altId="p002.output.low" configurationId="p002"/>
+      <configSetting altId="p002.gpio_mode.gpio_mode_out.low" configurationId="p002.gpio_mode"/>
       <configSetting altId="p004.asel" configurationId="p004"/>
       <configSetting altId="p004.gpio_mode.gpio_mode_an" configurationId="p004.gpio_mode"/>
       <configSetting altId="p005.asel" configurationId="p005"/>
@@ -907,12 +909,20 @@
       <configSetting altId="p410.iic2.scl" configurationId="p410"/>
       <configSetting altId="p410.gpio_speed.gpio_speed_medium" configurationId="p410.gpio_drivecapacity"/>
       <configSetting altId="p410.gpio_mode.gpio_mode_peripheral" configurationId="p410.gpio_mode"/>
+      <configSetting altId="p511.output.low" configurationId="p511"/>
+      <configSetting altId="p511.gpio_mode.gpio_mode_out.low" configurationId="p511.gpio_mode"/>
+      <configSetting altId="p512.output.low" configurationId="p512"/>
+      <configSetting altId="p512.gpio_mode.gpio_mode_out.low" configurationId="p512.gpio_mode"/>
       <configSetting altId="p608.output.low" configurationId="p608"/>
       <configSetting altId="p608.gpio_mode.gpio_mode_out.low" configurationId="p608.gpio_mode"/>
       <configSetting altId="p613.sci7.txd" configurationId="p613"/>
       <configSetting altId="p613.gpio_mode.gpio_mode_peripheral" configurationId="p613.gpio_mode"/>
       <configSetting altId="p614.sci7.rxd" configurationId="p614"/>
       <configSetting altId="p614.gpio_mode.gpio_mode_peripheral" configurationId="p614.gpio_mode"/>
+      <configSetting altId="p803.output.low" configurationId="p803"/>
+      <configSetting altId="p803.gpio_mode.gpio_mode_out.low" configurationId="p803.gpio_mode"/>
+      <configSetting altId="p804.output.low" configurationId="p804"/>
+      <configSetting altId="p804.gpio_mode.gpio_mode_out.low" configurationId="p804.gpio_mode"/>
       <configSetting altId="qspi0.mode.custom.free" configurationId="qspi0.mode"/>
       <configSetting altId="qspi0.pairing.free" configurationId="qspi0.pairing"/>
       <configSetting altId="qspi0.qio0.p307" configurationId="qspi0.qio0"/>
