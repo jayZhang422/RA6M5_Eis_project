@@ -19,7 +19,7 @@ class Battery_screen
     uint8_t get_page;   //获取当前页面
 
     public:
-    void test(void);
+    void update(void);
     void init(void);//初始化
     void clear(void);//切换自动清除
     void Get(void);//获取信息

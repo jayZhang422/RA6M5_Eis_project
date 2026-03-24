@@ -5,6 +5,7 @@
 #include "dsp/transform_functions.h"
 #include <arm_math.h>
 #include <cassert>
+#include <cmath>
 
 
 #define BSP_ALG_SIN 0
@@ -151,4 +152,75 @@ public:
     }
 };
 
+// 专门用来装载 DAC 配置的结构体
+struct DacWaveConfig {
+    float offset;    // 换算后的 DAC 偏置值
+    float amplitude; // 换算后的 DAC 振幅值
+};
 
+class DacConfigHelper {
+public:
+    /**
+     * @brief 人性化的 DAC 波形参数设置辅助函数
+     * @param center_voltage_mv 中心偏置电压 (单位: 毫伏 mV)。建议设为 1650 (即 1.65V)
+     * @param peak_amplitude_mv 正弦波的峰值振幅 (单位: 毫伏 mV)。比如 1000mV 代表波形上下各摆动 1V (峰峰值 2V)
+     * @param vref_mv           系统 DAC 的参考硬件电压 (通常为 3300 mV)
+     * @return DacWaveConfig    算好的可以直接塞给 DAC_Waveform 的参数
+     */
+    static DacWaveConfig Calculate(float center_voltage_mv = 1650.0f, 
+                                   float peak_amplitude_mv = 1000.0f, 
+                                   float vref_mv = 3300.0f) 
+    {
+        DacWaveConfig config;
+        // 12位 DAC 的最大值是 4095.0f
+        const float max_dac_val = 4095.0f;
+        const float safe_center_mv = 1650.0f;
+        const float safe_amp_mv = 0.0f;
+        const float safe_vref_mv = 3300.0f;
+
+        // 输入兜底：阻断 NaN/Inf 和非法 Vref，避免异常值传播到 DAC。
+        if (!std::isfinite(center_voltage_mv)) {
+        if (!std::isfinite(center_voltage_mv)) {
+            center_voltage_mv = safe_center_mv;
+        }
+        if (!std::isfinite(peak_amplitude_mv)) {
+            peak_amplitude_mv = safe_amp_mv;
+        }
+        if (!std::isfinite(vref_mv) || (vref_mv <= 0.0f)) {
+            vref_mv = safe_vref_mv;
+        }
+
+        // 1. 将人类易读的毫伏(mV)换算为机器所需的 DAC 原始数值
+        float offset_dac = (center_voltage_mv / vref_mv) * max_dac_val;
+        float amplitude_dac = (peak_amplitude_mv / vref_mv) * max_dac_val;
+
+        // 二次兜底：处理极端输入导致的中间非有限值。
+        if (!std::isfinite(offset_dac)) {
+        if (!std::isfinite(offset_dac)) {
+            offset_dac = (safe_center_mv / safe_vref_mv) * max_dac_val;
+        }
+        if (!std::isfinite(amplitude_dac)) {
+            amplitude_dac = 0.0f;
+        }
+
+        // 2. 极值与乱填保护 (防止瞎传负数或超限)
+        if (offset_dac > max_dac_val) offset_dac = max_dac_val;
+        if (offset_dac < 0.0f) offset_dac = 0.0f;
+        if (amplitude_dac < 0.0f) amplitude_dac = 0.0f;
+
+        // 3. 终极防削峰保护：如果请求的振幅过大，导致波峰顶破 3.3V 或波谷击穿 0V，则自动压缩振幅
+        // 保护上限：偏置 + 振幅 不能超过 4095
+        if (offset_dac + amplitude_dac > max_dac_val) {
+            amplitude_dac = max_dac_val - offset_dac; 
+        }
+        // 保护下限：偏置 - 振幅 不能小于 0
+        if (offset_dac - amplitude_dac < 0.0f) {
+            amplitude_dac = offset_dac; 
+        }
+
+        config.offset = offset_dac;
+        config.amplitude = amplitude_dac;
+
+        return config;
+    }
+};

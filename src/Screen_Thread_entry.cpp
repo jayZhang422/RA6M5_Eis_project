@@ -20,7 +20,7 @@ void Screen_Thread_entry(void)
        if ((LONG)(now - g_next_test_tick) >= 0)
        {
         g_next_test_tick += g_test_period_ticks;
-        battery.test();
+        battery.update();
        }
        tx_thread_sleep(1);
     }

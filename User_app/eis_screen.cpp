@@ -13,32 +13,29 @@ void Battery_screen::init(void)
         AppHmi::Init() ;
 }
 
-    void Battery_screen:: test(void){
+void Battery_screen:: update(void){
 
         Get();
         clear();
-        BSP_Printf(COM_DEBUG, "cells :%d",get_Cells) ;
-        BSP_Printf(COM_DEBUG, "Cap :%d",get_Capacity) ;
-        
         send(BODE, testCruve, 0);
         send(NYQUIST,testCruve,0);
        
         if(AppHmi::BrandDetecet::Tattu == get_brand )
         {
-            AppPrint::PrintLog("now is Tattu") ;
+           
         }
         else  if(AppHmi::BrandDetecet::BosLi == get_brand )
         {
-            AppPrint::PrintLog("now is Bosli") ;
+           
         }
         else  if(AppHmi::BrandDetecet::Infinity == get_brand )
         {
-            AppPrint::PrintLog("now is Infinity") ;
+           
         }
 
-        Update_InternalResistance(30.2, AppHmi::MeasureState::HIGH);
-        Update_TransferImpedance(20.3, AppHmi::MeasureState::LOW );
-        Update_HealthStatus(AppHmi::HealthLevel::FAIR);
+        // Update_InternalResistance(30.2, AppHmi::MeasureState::HIGH);
+        // Update_TransferImpedance(20.3, AppHmi::MeasureState::LOW );
+        // Update_HealthStatus(AppHmi::HealthLevel::FAIR);
      
     }
 void Battery_screen::clear(void)
