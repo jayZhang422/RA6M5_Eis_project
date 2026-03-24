@@ -36,7 +36,7 @@ public:
 
         // 3. 构建理论激励电流波形
         EisRefGenerator::Generate(sim_current_arr, data_len, freq_hz, fs, BSP_ALG_SIN);
-        float I_amplitude = current_amps * 1.41421356f; 
+        float I_amplitude = current_amps; 
         for(uint32_t i = 0; i < data_len; i++) {
             sim_current_arr[i] *= I_amplitude;
         }
