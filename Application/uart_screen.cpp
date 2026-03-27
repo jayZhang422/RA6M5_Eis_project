@@ -11,6 +11,7 @@ namespace AppHmi {
     static uint8_t g_active_page  = 0;
     static BrandDetecet g_brand  = BrandDetecet::Tattu;
     static CruveStatus g_is_curveDrawing = CruveStatus::CLEAR;
+    static bool start = false ;
     // ==========================================
     // 内部辅助函数：重置高亮颜色为灰色
     // ==========================================
@@ -60,8 +61,15 @@ namespace AppHmi {
     // Page 1 事件处理 (读取为主) 
     // ==========================================
     static void Handle_Page1(uint8_t cmp, uint8_t event) {
-        (void) cmp;
-        (void) event;
+        if (event != 0x01) return; 
+
+        switch (cmp) {
+            case CmpId::P1_BTN_START:
+                start = true ;
+                break;
+                
+            default: break;
+        }
         
     }
 
@@ -154,6 +162,14 @@ namespace AppHmi {
     {
         return g_active_page ;
     }
+    bool GetStartStaus(void)
+    {
+        return start ;
+    }
+    void setStartStuas(bool s)
+    {
+        start = s ;
+    }
     // ==========================================
     // 暴露的初始化接口
     // ==========================================
@@ -198,14 +214,20 @@ void Update_InternalResistance(float value, MeasureState state) {
     }
 
     void Update_HealthStatus(HealthLevel level) {
-        // 互斥高亮健康度 (t7, t6, t5, t4, t15) 
-        TjcHmi::SendCmd("page4.t7.pco=%u",  level == HealthLevel::EXCELLENT ? COLOR_GREEN  : COLOR_GRAY);
+        
+       
         TjcHmi::SendCmd("page4.t6.pco=%u",  level == HealthLevel::GOOD      ? COLOR_GREEN  : COLOR_GRAY);
         TjcHmi::SendCmd("page4.t5.pco=%u",  level == HealthLevel::FAIR      ? COLOR_YELLOW : COLOR_GRAY);
         TjcHmi::SendCmd("page4.t4.pco=%u",  level == HealthLevel::POOR      ? COLOR_RED    : COLOR_GRAY);
-        TjcHmi::SendCmd("page4.t15.pco=%u", level == HealthLevel::INFERIOR  ? COLOR_RED    : COLOR_GRAY);
+        
     }
   
+    void Update_Status (Prostaus staus )
+    {
+        TjcHmi::SendCmd("page4.t7.pco=%u",  staus == Prostaus::Unstart      ? COLOR_GREEN  : COLOR_GRAY);
+        TjcHmi::SendCmd("page4.t15.pco=%u",  staus == Prostaus::Doing      ? COLOR_YELLOW : COLOR_GRAY);
+        TjcHmi::SendCmd("page4.t10.pco=%u",  staus == Prostaus::Finsh      ? COLOR_RED    : COLOR_GRAY);
+    }
     void Clear_Curve(uint8_t curve_id, uint8_t channel) {
         TjcHmi::SendCmd("cle %u,%u", curve_id, channel);
     }

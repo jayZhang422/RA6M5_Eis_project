@@ -4,6 +4,7 @@
 
                 extern void App_Thread_create(void);
 extern void Screen_Thread_create(void);
+extern void App2_Thread_create(void);
 
                 uint32_t     g_fsp_common_thread_count;
                 bool         g_fsp_common_initialized;
@@ -58,6 +59,7 @@ extern void Screen_Thread_create(void);
 
                     App_Thread_create();
 Screen_Thread_create();
+App2_Thread_create();
 
 					#ifdef TX_USER_ENABLE_TRACE
 					TX_USER_ENABLE_TRACE;

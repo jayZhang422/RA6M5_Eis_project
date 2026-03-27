@@ -63,6 +63,7 @@ file(GLOB_RECURSE USER_SOURCES
     "Driver/*.cpp"
     "User_app/*.cpp"
     "User_app/*.c"
+    "Algorithm/*.cpp"
    
    
 ) 
@@ -90,7 +91,7 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
     "Algorithm"
     "src/DAC"
     "User_app"
-    
+     
 
    
     

@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "tx_api.h"
-
+ 
 namespace EIS {
 
 // 定义每次 DMA 搬运的数据块大小 (需结合扫频管理器的 IntegerCycleOptimizer 动态修改，这里设最大值)

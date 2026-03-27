@@ -17,6 +17,7 @@ class Battery_screen
     int32_t get_Cells ;     //获取节数
     AppHmi::CruveStatus get_status; //获取曲线绘制状态
     uint8_t get_page;   //获取当前页面
+    bool get_start;
 
     public:
     void update(void);

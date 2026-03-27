@@ -29,6 +29,7 @@ namespace AppHmi {
         constexpr uint8_t P1_BTN_BRAND     = 5; // b1 (品牌按钮，ID为5)
         constexpr uint8_t P1_NUM_CELLS     = 1; // n0 (节数，ID为1)
         constexpr uint8_t P1_NUM_CAPACITY  = 2; // n1 (容量，ID为2)
+        constexpr uint8_t P1_BTN_START     = 9;
     }
 
     // ==========================================
@@ -68,7 +69,12 @@ namespace AppHmi {
         DYNAMIC,
         CLEAR,
      };
-
+    enum class Prostaus{
+      Unstart,
+      Doing,
+      Finsh
+        
+    };
     // ==========================================
     // 5. 对外暴露的 API
     // ==========================================
@@ -87,8 +93,11 @@ namespace AppHmi {
     int32_t GetCapacity(void);
     uint8_t GetCurrentPage(void);
     CruveStatus GetCurveStatus (void);
+    bool GetStartStaus(void);
+    void setStartStuas(bool s);
     void Clear_Curve(uint8_t curve_id, uint8_t channel);
     void Add_Curve_Point(uint8_t curve_id, uint8_t channel, uint8_t val);
+    void Update_Status (Prostaus staus );
     template <size_t N>
     void Fast_Send_Float_Array(uint8_t curve_id, uint8_t channel, const float (&data)[N]) {
         if (N == 0) return;

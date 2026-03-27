@@ -3,42 +3,26 @@
 #include <cstdint>
 
     
-float testCruve[3] = {230.5,330.3,220.0};
+
 
     
 
-void Battery_screen::init(void)
+extern"C" void Battery_screen::init(void)
 {
         TjcHmi::Init(COM_TJC) ;
         AppHmi::Init() ;
 }
 
-void Battery_screen:: update(void){
+extern"C" void Battery_screen:: update(void){
 
         Get();
         clear();
-        send(BODE, testCruve, 0);
-        send(NYQUIST,testCruve,0);
-       
-        if(AppHmi::BrandDetecet::Tattu == get_brand )
-        {
-           
-        }
-        else  if(AppHmi::BrandDetecet::BosLi == get_brand )
-        {
-           
-        }
-        else  if(AppHmi::BrandDetecet::Infinity == get_brand )
-        {
-           
-        }
+        
+        
 
-        // Update_InternalResistance(30.2, AppHmi::MeasureState::HIGH);
-        // Update_TransferImpedance(20.3, AppHmi::MeasureState::LOW );
-        // Update_HealthStatus(AppHmi::HealthLevel::FAIR);
-     
+        
     }
-void Battery_screen::clear(void)
+extern"C" void Battery_screen::clear(void)
 {
     if(AppHmi::PAGE_2_NYQUIST != get_page && AppHmi::PAGE_3_BODE != get_page)
     {
@@ -47,11 +31,12 @@ void Battery_screen::clear(void)
 
 
 }
-void Battery_screen::Get(void)
+extern"C" void Battery_screen::Get(void)
 {
         get_brand = AppHmi::GetBrand() ;
         get_Capacity =AppHmi::GetCapacity() ;
         get_Cells =AppHmi::GetCells() ;
         get_status = AppHmi::GetCurveStatus();
         get_page = AppHmi::GetCurrentPage() ;
+        get_start = AppHmi::GetStartStaus();
 }
