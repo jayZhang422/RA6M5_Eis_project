@@ -737,7 +737,7 @@ const gpt_extended_cfg_t g_timer_overflow_extend =
 const timer_cfg_t g_timer_overflow_cfg =
 {
     .mode                = TIMER_MODE_PERIODIC,
-    /* Actual period: 0.00001 seconds. Actual duty: 50%. */ .period_counts = (uint32_t) 0x3e8, .duty_cycle_counts = 0x1f4, .source_div = (timer_source_div_t)0,
+    /* Actual period: 0.000001 seconds. Actual duty: 50%. */ .period_counts = (uint32_t) 0x64, .duty_cycle_counts = 0x32, .source_div = (timer_source_div_t)0,
     .channel             = 6,
     .p_callback          = NULL,
     /** If NULL then do not add & */
