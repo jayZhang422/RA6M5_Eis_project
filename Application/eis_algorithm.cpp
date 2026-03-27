@@ -1,3 +1,4 @@
+#include "bsp_adc.h"
 #include "bsp_algorithm.hpp"
 #include <sys/errno.h>
 #include "bsp_name.hpp"
@@ -39,6 +40,8 @@ static float32_t s_process_buffer_v[EIS::MAX_DMA_BUFFER_SIZE];
 // 统一的硬件初始化模块，避免重复写代码
 static void HW_Init_Excitation_Path() {
     BSP_DAC_Init(BSP_DAC_WAVE);
+    BSP_ADC_Init(BSP_ADC_0);
+    BSP_DMAC_Init(BSP_DMAC_ADC_0);
     BSP_DMAC_Init(BSP_DMAC_DAC);
     BSP_Timer_Init(BSP_TIMER_OVERFLOW);
     BSP_ELC_Init(BSP_ELC);
@@ -176,7 +179,6 @@ extern "C" void DAC_SweepSignal(void) {
     BSP_Timer_Stop(BSP_TIMER_OVERFLOW);
     g_dma_dac.p_api->disable(g_dma_dac.p_ctrl);
     g_dma_dac.p_api->close(g_dma_dac.p_ctrl);
-    AppPrint::PrintLog("Sweep finished.");
     while (1) { tx_thread_sleep(1000); }
 }
 

@@ -153,7 +153,7 @@ FSP Configuration
       P000 R12 ICU0_IRQ06 - - IRQ06 "IRQ mode" - None "ADC0: AN000; ADC1: AN100; ICU0: IRQ06" - IO - - 
       P001 N11 - - - - Disabled - - "ADC0: AN001; ADC1: AN101; ICU0: IRQ07" - None - - 
       P002 R11 GPIO - - None "Output mode (Initial Low)" CMOS - "ADC0: AN002; ADC1: AN102; ICU0: IRQ08" - IO - - 
-      P003 M5 - - - - Disabled - - "ADC0: AN003" - None - - 
+      P003 M5 ADC0_AN003 - - - "Analog mode" - None "ADC0: AN003" - IO - - 
       P004 P11 ADC0_AN004 - - - "Analog mode" - None "ADC0: AN004; ICU0: IRQ09" - IO - - 
       P005 R10 ADC0_AN005 - - - "Analog mode" - None "ADC0: AN005; ICU0: IRQ10" - IO - - 
       P006 N10 - - - - Disabled - - "ADC0: AN006; ICU0: IRQ11" - None - - 
@@ -633,7 +633,7 @@ FSP Configuration
       General: Clear after read: On
       General: Mode: Single Scan
       General: Double-trigger: Disabled
-      Input: Channel Scan Mask (channel availability varies by MCU): Channel 5
+      Input: Channel Scan Mask (channel availability varies by MCU): Channel 3, Channel 4, Channel 5
       Input: Group B Scan Mask (channel availability varies by MCU): 
       Interrupts: Normal/Group A Trigger: GPT6 COUNTER OVERFLOW (Overflow)
       Interrupts: Group B Trigger: Disabled
@@ -642,7 +642,7 @@ FSP Configuration
       Input: Reference Voltage control: VREFH0/VREFH
       Input: Addition/Averaging Mask (channel availability varies by MCU and unit): 
       Input: Sample and Hold: Sample and Hold Channels (Available only on selected MCUs): 
-      Input: Sample and Hold: Sample Hold States (Applies only to channels 0, 1, 2): 100
+      Input: Sample and Hold: Sample Hold States (Applies only to channels 0, 1, 2): 48
       Input: Window Compare: Window Mode: Disabled
       Input: Window Compare: Event Output: OR
       Input: Window Compare: Window A: Enable: Disabled

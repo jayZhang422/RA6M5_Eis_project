@@ -65,6 +65,7 @@
   </raClockConfiguration>
   <raPinConfiguration>
     <pincfg active="true" name="" symbol="">
+      <configSetting altId="adc0.an03.p003" configurationId="adc0.an03" isUsedByDriver="true" peripheral="ADC0"/>
       <configSetting altId="adc0.an04.p004" configurationId="adc0.an04" isUsedByDriver="true" peripheral="ADC0"/>
       <configSetting altId="adc0.an05.p005" configurationId="adc0.an05" isUsedByDriver="true" peripheral="ADC0"/>
       <configSetting altId="dac0.da.p014" configurationId="dac0.da" isUsedByDriver="true" peripheral="DAC0"/>
@@ -77,6 +78,7 @@
       <configSetting altId="p000.gpio_mode.gpio_mode_irq" configurationId="p000.gpio_mode"/>
       <configSetting altId="p002.output.low" configurationId="p002"/>
       <configSetting altId="p002.gpio_mode.gpio_mode_out.low" configurationId="p002.gpio_mode"/>
+      <configSetting altId="p003.gpio_mode.gpio_mode_an" configurationId="p003.gpio_mode"/>
       <configSetting altId="p004.gpio_mode.gpio_mode_an" configurationId="p004.gpio_mode"/>
       <configSetting altId="p005.gpio_mode.gpio_mode_an" configurationId="p005.gpio_mode"/>
       <configSetting altId="p014.gpio_mode.gpio_mode_an" configurationId="p014.gpio_mode"/>

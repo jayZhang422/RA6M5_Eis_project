@@ -125,7 +125,7 @@ void NULL(adc_callback_args_t * p_args);
 #endif
 
 #ifndef NULL
-#define ADC_DMAC_CHANNELS_PER_BLOCK_NULL  1
+#define ADC_DMAC_CHANNELS_PER_BLOCK_NULL  3
 #endif
 /* RTC Instance. */
 extern const rtc_instance_t g_rtc0;

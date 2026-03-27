@@ -566,12 +566,12 @@ const adc_window_cfg_t g_adc5_window_cfg =
 #endif
 const adc_channel_cfg_t g_adc5_channel_cfg =
 {
-    .scan_mask           = ADC_MASK_CHANNEL_5 |  0,
+    .scan_mask           = ADC_MASK_CHANNEL_3 | ADC_MASK_CHANNEL_4 | ADC_MASK_CHANNEL_5 |  0,
     .scan_mask_group_b   =  0,
     .priority_group_a    = ADC_GROUP_A_PRIORITY_OFF,
     .add_mask            =  0,
     .sample_hold_mask    =  0,
-    .sample_hold_states  = 100,
+    .sample_hold_states  = 48,
 #if ((0) | (0))
     .p_window_cfg        = (adc_window_cfg_t *) &g_adc5_window_cfg,
 #else
